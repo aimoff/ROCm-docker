@@ -2,18 +2,20 @@
 
 This fork is almost completely re-written as:
 
-- All images are built with docker-compose.
+- All images are built with docker compose.
 - Reuse pre-built image to reduce time and space.
 - Re-wrote `docker-compose.yml`
   - Remove (probably) obsolete services for building images from souce.
   - Only a specific OS version is teated at a time.
     - OS / version / variant are specified by `.env` file.
 - `render` group id is set to same number as host.
-- Use `gpg --dearmor` instead of `apt-key add` for ubuntu-20.04 or later.
+- Use `gpg --dearmor` instead of `apt-key add`.
 - Add X11 enabled terminal image.
-- Omit CentOS-7 stuff due to its EOL.
-- Omit Ubuntu 18.04 stuffs.
-- Add many image variants based on latest (6.1) [ROCm Programming Models][].
+- Omit CentOS-7 variant due to its EOL.
+- Omit Ubuntu 18.04 variant.
+- Omit Ubuntu 20.04 variant.
+- Add Debian Trixie variant.
+- Add many image variants based on latest (7.1) [ROCm Programming Models][].
 
 [ROCm Programming Models]: https://rocm.docs.amd.com/projects/install-on-linux/en/latest/how-to/native-install/package-manager-integration.html#components-of-rocm-programming-models
 
@@ -50,19 +52,19 @@ This fork is almost completely re-written as:
    $ id -u
    ```
 3. Check `.env` file and edit it if necessary.
-4. Build a service by `docker-compose` (or `docker compose`) command.
+4. Build a service by `docker compose` (or `docker-compose`) command.
    Following is exampe of "TERM_FLAVOR=-ml"
    ```console
-   $ docker-compose build base
-   $ docker-compose build hip
-   $ docker-compose build hip-libs
-   $ docker-compose build ml
-   $ docker-compose build term
+   $ docker compose build base
+   $ docker compose build hip
+   $ docker compose build hip-libs
+   $ docker compose build ml
+   $ docker compose build term
    ```
 
 ## How to run
 ```console
-$ docker-compose run --rm term
+$ docker compose run --rm term
 ```
 
 Original README follows:

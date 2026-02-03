@@ -1,11 +1,13 @@
 #!/bin/sh
 
 OS=${OS:-ubuntu}
+#OS=${OS:-debian}
 OS_VERSION=${OS_VERSION:-24.04}
+#OS_VERSION=${OS_VERSION:-trixie}
 OS_VARIANT=${OS_VARIANT:-${OS}-${OS_VERSION}}
-ROCM_VERSION=${ROCM_VERSION:-6.2}
-AMDGPU_VERSION=${AMDGPU_VERSION:-6.2}
-#TERM_FLAVOR=""
+ROCM_VERSION=${ROCM_VERSION:-7.1.1}
+GFX_VERSION=${GFX_VERSION:-10.3.0}
+GFX_ARCH=${GFX_ARCH:-gfx1030}
 TERM_FLAVOR="-complete-sdk"
 XTERM_FLAVOR="-complete"
 RENDER_GID=$(getent group render | cut --delimiter ':' --fields 3)
@@ -13,7 +15,8 @@ RENDER_GID=$(getent group render | cut --delimiter ':' --fields 3)
 cat >.env <<EOF
 OS_VARIANT=${OS_VARIANT}
 ROCM_VERSION=${ROCM_VERSION}
-AMDGPU_VERSION=${AMDGPU_VERSION}
+GFX_VERSION=${GFX_VERSION}
+GFX_ARCH=${GFX_ARCH}
 TERM_FLAVOR=${TERM_FLAVOR}
 XTERM_FLAVOR=${XTERM_FLAVOR}
 UID=${UID:-$(id -u)}
@@ -21,8 +24,8 @@ RENDER_GID=${RENDER_GID}
 EOF
 
 # choose your compose tool
-COMPOSE="docker-compose"
-#COMPOSE="docker compose"
+#COMPOSE="docker-compose"
+COMPOSE="docker compose"
 
 # build rocm/dev-${OS_VARIANT}:${ROCM_VERSION}
 ${COMPOSE} build base || exit $?

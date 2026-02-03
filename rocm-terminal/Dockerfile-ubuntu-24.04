@@ -10,7 +10,7 @@
 # If it is desired to run the container manually through the docker command-line, the following is an example
 # 'docker run -it --rm -v [host/directory]:[container/directory]:ro <user-name>/<project-name>'.
 
-ARG ROCM_VERSION=6.2
+ARG ROCM_VERSION=7.1
 ARG TERM_FLAVOR
 
 FROM rocm/dev-ubuntu-24.04:${ROCM_VERSION}${TERM_FLAVOR}
@@ -18,6 +18,7 @@ FROM rocm/dev-ubuntu-24.04:${ROCM_VERSION}${TERM_FLAVOR}
 ARG UID
 ARG RENDER_GID
 ARG USER_NAME=rocm-user
+ENV LANG=C.UTF-8
 
 # Initialize the image
 # Modify to pre-install dev tools and ROCm packages
@@ -25,6 +26,7 @@ RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   git \
   vim-nox \
+  locales \
   less \
   cmake-curses-gui \
   python3-pip \
@@ -33,7 +35,9 @@ RUN apt-get update \
   python3-argcomplete \
   libgulkan-dev \
   libplacebo-dev \
-  rocm-developer-tools
+  rocm-developer-tools \
+  mediainfo \
+  ffmpeg
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

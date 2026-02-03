@@ -9,7 +9,6 @@ services:
       dockerfile: Dockerfile-${OS_VARIANT:-ubuntu-24.04}
       args:
         ROCM_VERSION: ${ROCM_VERSION}
-        AMDGPU_VERSION: ${AMDGPU_VERSION}
     devices:
       - /dev/kfd
       - /dev/dri
@@ -22,7 +21,7 @@ services:
       context: ./dev
       dockerfile: Dockerfile-${OS_VARIANT:-ubuntu-24.04}-hip
       args:
-        OS_VARIANT: ${OS_VARIANT}
+        OS_VARIANT: ${OS_VARIANT:-ubuntu-24.04}
         ROCM_VERSION: ${ROCM_VERSION}
     devices:
       - /dev/kfd
@@ -36,7 +35,7 @@ services:
       context: ./dev
       dockerfile: Dockerfile-${OS_VARIANT:-ubuntu-24.04}-hip-sdk
       args:
-        OS_VARIANT: ${OS_VARIANT}
+        OS_VARIANT: ${OS_VARIANT:-ubuntu-24.04}
         ROCM_VERSION: ${ROCM_VERSION}
     devices:
       - /dev/kfd
@@ -50,8 +49,9 @@ services:
       context: ./dev
       dockerfile: Dockerfile-${OS_VARIANT:-ubuntu-24.04}-ml
       args:
-        OS_VARIANT: ${OS_VARIANT}
+        OS_VARIANT: ${OS_VARIANT:-ubuntu-24.04}
         ROCM_VERSION: ${ROCM_VERSION}
+        GFX_ARCH: ${GFX_ARCH:-gfx1030}
     devices:
       - /dev/kfd
       - /dev/dri
@@ -64,7 +64,7 @@ services:
       context: ./dev
       dockerfile: Dockerfile-${OS_VARIANT:-ubuntu-24.04}-ml-sdk
       args:
-        OS_VARIANT: ${OS_VARIANT}
+        OS_VARIANT: ${OS_VARIANT:-ubuntu-24.04}
         ROCM_VERSION: ${ROCM_VERSION}
     devices:
       - /dev/kfd
@@ -78,7 +78,7 @@ services:
       context: ./dev
       dockerfile: Dockerfile-${OS_VARIANT:-ubuntu-24.04}-opencl
       args:
-        OS_VARIANT: ${OS_VARIANT}
+        OS_VARIANT: ${OS_VARIANT:-ubuntu-24.04}
         ROCM_VERSION: ${ROCM_VERSION}
     devices:
       - /dev/kfd
@@ -92,7 +92,7 @@ services:
       context: ./dev
       dockerfile: Dockerfile-${OS_VARIANT:-ubuntu-24.04}-opencl-sdk
       args:
-        OS_VARIANT: ${OS_VARIANT}
+        OS_VARIANT: ${OS_VARIANT:-ubuntu-24.04}
         ROCM_VERSION: ${ROCM_VERSION}
     devices:
       - /dev/kfd
@@ -106,7 +106,7 @@ services:
       context: ./dev
       dockerfile: Dockerfile-${OS_VARIANT:-ubuntu-24.04}-openmp-sdk
       args:
-        OS_VARIANT: ${OS_VARIANT}
+        OS_VARIANT: ${OS_VARIANT:-ubuntu-24.04}
         ROCM_VERSION: ${ROCM_VERSION}
     devices:
       - /dev/kfd
@@ -120,7 +120,7 @@ services:
       context: ./dev
       dockerfile: Dockerfile-${OS_VARIANT:-ubuntu-24.04}-complete
       args:
-        OS_VARIANT: ${OS_VARIANT}
+        OS_VARIANT: ${OS_VARIANT:-ubuntu-24.04}
         ROCM_VERSION: ${ROCM_VERSION}
     devices:
       - /dev/kfd
@@ -134,7 +134,7 @@ services:
       context: ./dev
       dockerfile: Dockerfile-${OS_VARIANT:-ubuntu-24.04}-complete-sdk
       args:
-        OS_VARIANT: ${OS_VARIANT}
+        OS_VARIANT: ${OS_VARIANT:-ubuntu-24.04}
         ROCM_VERSION: ${ROCM_VERSION}
     devices:
       - /dev/kfd
@@ -152,15 +152,25 @@ services:
         TERM_FLAVOR: ${TERM_FLAVOR:-complete-sdk}
         UID: ${UID}
         RENDER_GID: ${RENDER_GID}
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=${GFX_VERSION}
+      - GFX_ARCH=${GFX_ARCH}
+      - MIOPEN_FIND_MODE=fast
+#   ipc: host
     devices:
       - /dev/kfd
       - /dev/dri
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
 #   tmpfs:
 #     - /tmp
     volumes:
-      - ~/venv:/home/${USER_NAME:-rocm-user}/venv
-      - ~/src:/home/${USER_NAME:-rocm-user}/src
+      - /dev/shm:/dev/shm
       - /tmp:/tmp
+      - ./home:/home/${USER_NAME:-rocm-user}
+      - ~/src:/home/${USER_NAME:-rocm-user}/src
 
   xterm:
     image: rocm/rocm-terminal:${ROCM_VERSION:-latest}-${OS_VARIANT:-ubuntu-24.04}-x11
@@ -173,6 +183,8 @@ services:
         UID: ${UID}
         RENDER_GID: ${RENDER_GID}
     environment:
+      - HSA_OVERRIDE_GFX_VERSION=${GFX_VERSION}
+      - GFX_ARCH=${GFX_ARCH}
       - DISPLAY
       - PULSE_SERVER=unix:/tmp/pulse/native
       - PULSE_COOKIE=/tmp/pulse/cookie
@@ -180,15 +192,20 @@ services:
       - SYS_ADMIN
     security_opt:
       - apparmor:unconfined
+#   ipc: host
     devices:
       - /dev/kfd
       - /dev/dri
+#     - /dev/shm
       - /dev/fuse
-    tmpfs:
-      - /tmp
+#   tmpfs:
+#     - /tmp
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /dev/shm:/dev/shm
+      - /tmp:/tmp
+#     - /tmp/.X11-unix:/tmp/.X11-unix
       - /run/user/${UID:-1000}/pulse/native:/tmp/pulse/native
       - ~/.config/pulse/cookie:/tmp/pulse/cookie:ro
-      - ~/venv:/home/${USER_NAME:-rocm-user}/venv
+      - ./home:/home/${USER_NAME:-rocm-user}
       - ~/src:/home/${USER_NAME:-rocm-user}/src
+

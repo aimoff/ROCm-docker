@@ -9,11 +9,10 @@ ARG AMDGPU_VERSION=6.2
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends apt-utils \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates curl gnupg \
-  && curl -sL https://repo.radeon.com/rocm/rocm.gpg.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/rocm.gpg \
-  && echo "deb [arch=amd64] https://repo.radeon.com/rocm/apt/$ROCM_VERSION noble main" | tee /etc/apt/sources.list.d/rocm.list \
-  && echo "deb [arch=amd64] https://repo.radeon.com/amdgpu/$AMDGPU_VERSION/ubuntu noble main" | tee /etc/apt/sources.list.d/amdgpu.list \
-  && DEBIAN_FRONTEND=noninteractive apt-get purge -y curl gnupg \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates curl \
+  && curl -sL https://repo.radeon.com/rocm/rocm.gpg.key >/etc/apt/keyrings/rocm.asc \
+  && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.asc] https://repo.radeon.com/rocm/apt/$ROCM_VERSION noble main" >/etc/apt/sources.list.d/rocm.list \
+  && DEBIAN_FRONTEND=noninteractive apt-get purge -y curl \
   && DEBIAN_FRONTEND=noninteractive apt-get --purge -y autoremove
 COPY rocm-pin-600 /etc/apt/preferences.d/
 
