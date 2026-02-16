@@ -1,5 +1,98 @@
 # ROCm-docker
 
+This fork is almost completely rewritten as:
+
+* Use multi-stage Dockerfile.
+   * Reuse pre-built (intermediate) images to reduce time and space.
+* All images are built with docker compose.
+   * Export rocm-terminal image only.
+   * Remove (probably) obsolete services for building images from souce.
+- Only a specific OS version is teated at a time.
+   * OS / version / variant are specified by `.env` file.
+- Currently available OSs / versions are:
+   * Ubuntu 24.04 LTS
+   * Debian 13 (Trixie)
+* Do not use obsolete `apt-key add`.
+* Can specify image flavor based on latest (7.1) [ROCm programming models][].  
+  Available flavors are:
+   * `base` / `openmp-sdk`
+   * `hip-runtime` / `hip-runtime-dev`
+   * `hip` / `hip-sdk`
+   * `ml` / `ml-sdk`
+   * `opencl` / `opencl-sdk`
+   * `complete` / `complete-sdk`
+* Add X11 enabled terminal.
+
+[ROCm programming models]: https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/package-manager-integration.html#components-of-rocm-programming-models
+
+## How to build
+### 1. Check `.env` file and edit it if necessary.
+* `OS` : *ubuntu* or *debian*
+* `OS_VERSION` : *24.04* for Ubuntu or *trixie* for Debian
+* `ROCM_VERSION`
+* `RT_FLAVOR` : Image flavor for runtime terminal (`term` service)
+* `DEV_FLAVOR` : Image flavor for development terminal (`devterm` service)
+* `X_FLAVOR` : Image flavor for X11 enabled terminal (`xterm` service)
+* `UID` : User ID of the user account
+* `USER_NAME` : User name associated to `UID`
+* `RENDER_GID` : Same group id as the Linux host (**Required**)
+* `GFX_VERSION` : GPU version (See bellow)
+* `GFX_ARCH` : GPU architecture (See bellow)
+
+You can find the id of `render` group of Linux host:
+
+```console
+$ getent group render
+```
+
+Your GPU architecture can be found with `rocminfo` command like:
+
+```console
+$ rocminfo | grep gfx
+  Name:                    gfx1031
+      Name:                    amdgcn-amd-amdhsa--gfx1031
+```
+
+Please refer [Supported GPUs][] and [Compatibility matrix][] to find officially supprted GPU architectures.
+If your GPU architectore is not listed in these pages,
+you may specify `GFX_ARCH` and `GFX_VERSION` to pretend to be a supported GPU.
+On the above example case, ROCm may work with following setting:
+
+```conf
+GFX_VERSION=10.3.0
+GFX_ARCH=gfx1031
+```
+
+Ref: [Pytorch Performance on AMD Radeon and Instinct GPUs](https://www.amd.com/content/dam/amd/en/documents/developer/webinars/rocm/pytorch-on-radeon-and-instinct-gpus.pdf) page 20
+
+[Supported GPUs]: https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html#supported-gpus
+[Compatibility matrix]: https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html
+
+### 2. Build
+```console
+$ docker compose build term     # or devterm / xterm
+```
+
+## How to run
+### 1. Check `compose.yml` file and edit it if necessary.
+* environment
+* volumes
+
+### 2. Run
+```console
+$ docker compose run --rm term  # or devterm / xterm
+```
+
+## Supplementary information
+
+Original `docker-compose.yml` file is renamed to `docker-compose.orig.yml`,
+but other assets still remain as is.
+Do not run original scripts.
+
+Original README follows:
+
+-----
+
 ## Radeon Open Compute Platform for docker
 This repository contains a framework for building the software layers defined in the Radeon Open Compute Platform into portable docker images.  The following are docker dependencies, which should be installed on the target machine.
 

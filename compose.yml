@@ -1,0 +1,118 @@
+services:
+
+  term:
+    image: rocm-terminal:runtime-rocm${ROCM_VERSION:-7.1.1}-${RT_FLAVOR:-complete}-${OS:-ubuntu}-${OS_VERSION:-24.04}
+    build:
+      context: ./build
+      dockerfile: Dockerfile-${OS:-ubuntu}-${OS_VERSION:-24.04}
+      target: runtime-term
+      args:
+        ROCM_VERSION: ${ROCM_VERSION}
+        FLAVOR: ${RT_FLAVOR:-complete}
+        GFX_ARCH: ${GFX_ARCH:-}
+        UID: ${UID:-1000}
+        RENDER_GID: ${RENDER_GID}
+        USER_NAME: ${USER_NAME:-rocm-user}
+        LANG: ${LANG}
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=${GFX_VERSION:-}
+      - GFX_ARCH=${GFX_ARCH:-}
+      - MIOPEN_FIND_MODE=fast
+      - TZ=${TZ:-Asia/Tokyo}
+      - LANG=${LANG}
+#   ipc: host
+    devices:
+      - /dev/kfd
+      - /dev/dri
+#   cap_add:
+#     - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+#   tmpfs:
+#     - /tmp
+    volumes:
+      - /dev/shm:/dev/shm
+      - /tmp:/tmp
+      - ./home:/home/${USER_NAME:-rocm-user}
+    profiles:
+      - cli
+
+  devterm:
+    image: rocm-terminal:dev-rocm${ROCM_VERSION:-7.1.1}-${DEV_FLAVOR:-complete-sdk}-${OS:-ubuntu}-${OS_VERSION:-24.04}
+    build:
+      context: ./build
+      dockerfile: Dockerfile-${OS:-ubuntu}-${OS_VERSION:-24.04}
+      target: dev-term
+      args:
+        ROCM_VERSION: ${ROCM_VERSION:-7.1.1}
+        FLAVOR: ${DEV_FLAVOR:-complete-sdk}
+        GFX_ARCH: ${GFX_ARCH:-}
+        UID: ${UID:-1000}
+        RENDER_GID: ${RENDER_GID}
+        USER_NAME: ${USER_NAME:-rocm-user}
+        LANG: ${LANG}
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=${GFX_VERSION:-}
+      - GFX_ARCH=${GFX_ARCH:-}
+#     - MIOPEN_FIND_MODE=fast
+      - TZ=${TZ:-Asia/Tokyo}
+      - LANG=${LANG}
+#   ipc: host
+    devices:
+      - /dev/kfd
+      - /dev/dri
+#   cap_add:
+#     - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+#   tmpfs:
+#     - /tmp
+    volumes:
+      - /dev/shm:/dev/shm
+      - /tmp:/tmp
+      - ./home:/home/${USER_NAME:-rocm-user}
+    profiles:
+      - cli
+
+  xterm:
+    image: rocm-terminal:x11-rocm${ROCM_VERSION:-7.1.1}-${X_FLAVOR:-complete}-${OS:-ubuntu}-${OS_VERSION:-24.04}
+    build:
+      context: ./build
+      dockerfile: Dockerfile-${OS:-ubuntu}-${OS_VERSION:-24.04}
+      target: x11-term
+      args:
+        ROCM_VERSION: ${ROCM_VERSION:-7.1.1}
+        FLAVOR: ${X_FLAVOR:-complete}
+        GFX_ARCH: ${GFX_ARCH:-}
+        UID: ${UID:-1000}
+        RENDER_GID: ${RENDER_GID}
+        USER_NAME: ${USER_NAME:-rocm-user}
+        LANG: ${LANG}
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=${GFX_VERSION:-}
+      - GFX_ARCH=${GFX_ARCH:-}
+      - TZ=${TZ:-Asia/Tokyo}
+      - LANG=${LANG}
+      - DISPLAY
+      - PULSE_SERVER=unix:/tmp/pulse/native
+      - PULSE_COOKIE=/tmp/pulse/cookie
+#   ipc: host
+    devices:
+      - /dev/kfd
+      - /dev/dri
+      - /dev/fuse
+#   cap_add:
+#     - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+#   tmpfs:
+#     - /tmp
+    volumes:
+      - /dev/shm:/dev/shm
+      - /tmp:/tmp
+#     - /tmp/.X11-unix:/tmp/.X11-unix
+      - /run/user/${UID:-1000}/pulse/native:/tmp/pulse/native
+      - ~/.config/pulse/cookie:/tmp/pulse/cookie:ro
+      - ./home:/home/${USER_NAME:-rocm-user}
+    profiles:
+      - cli
